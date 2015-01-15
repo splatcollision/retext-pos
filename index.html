@@ -1,1 +1,65 @@
-My Page
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>retext-pos</title>
+    <style>
+    textarea, div {
+      width: 100%;
+      max-width: 40rem;
+      margin: 0;
+      box-sizing: border-box;
+    }
+
+    fieldset {
+      margin: 1em 0;
+      border-width: 0;
+    }
+
+    html.jj div,
+    html.nn div,
+    html.rb div,
+    html.vb div,
+    html.in div,
+    html.cc div {
+      color: #999;
+    }
+
+    html.jj [data-tag*="JJ"],
+    html.nn [data-tag*="NN"],
+    html.rb [data-tag*="RB"],
+    html.vb [data-tag*="VB"],
+    html.in [data-tag*="IN"],
+    html.cc [data-tag*="CC"] {
+      color: black;
+    }
+    </style>
+  </head>
+  <body>
+    <h1>retext-pos</h1>
+    <p>A quick demo of <a href="https://github.com/wooorm/retext-pos">retext-pos</a>.</p>
+    <p>Raise any issues on <a href="https://github.com/wooorm/retext-pos/issues">Github</a>.</p>
+    <fieldset>
+      <label for="tag">
+        Highlight?
+        <select name="tag">
+          <option value="none">None</option>
+          <option value="jj" selected>Adjectives</option>
+          <option value="nn">Nouns</option>
+          <option value="rb">Adverbs</option>
+          <option value="vb">Verbs</option>
+          <option value="in">Prepositions</option>
+          <option value="cc">Conjunctions</option>
+        </select>
+      </label>
+      <small><strong>Note!</strong> You can also hover over words to see their tags.</small>
+    </fieldset>
+    <textarea rows="20" cols="80" autofocus>Retext POS (part-of-speech) tagger.
+
+Retext is an extensible natural language system—by default using parse-latin to transform natural language into a TextOM object model. Retext provides a pluggable system for analysing and manipulating natural language in JavaScript. NodeJS and the browser. Tests provide 100% coverage.
+
+Yes, that’s the intro to Retext. Very much no adverbs. Quite cool, right?</textarea>
+    <div></div>
+    <script src="build.js"></script>
+  </body>
+</html>
