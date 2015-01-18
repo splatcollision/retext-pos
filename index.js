@@ -5,9 +5,9 @@
  */
 
 var Retext = require('wooorm/retext@0.5.0');
-var pos = require('wooorm/retext-pos@0.2.0');
-var dom = require('wooorm/retext-dom@0.3.1');
-var visit = require('wooorm/retext-visit@0.2.5');
+var pos = require('wooorm/retext-pos@0.2.1');
+var dom = require('wooorm/retext-dom@0.3.2');
+var visit = require('wooorm/retext-visit@0.2.6');
 
 var map = require('./map.json');
 

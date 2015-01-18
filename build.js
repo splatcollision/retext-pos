@@ -90,9 +90,9 @@
  */
 
 var Retext = require('wooorm/retext@0.5.0');
-var pos = require('wooorm/retext-pos@0.2.0');
-var dom = require('wooorm/retext-dom@0.3.1');
-var visit = require('wooorm/retext-visit@0.2.5');
+var pos = require('wooorm/retext-pos@0.2.1');
+var dom = require('wooorm/retext-dom@0.3.2');
+var visit = require('wooorm/retext-visit@0.2.6');
 
 var map = require('./map.json');
 
@@ -160,7 +160,7 @@ $tag.addEventListener('change', onfocuschange);
 oninputchange();
 onfocuschange();
 
-}, {"wooorm/retext@0.5.0":2,"wooorm/retext-pos@0.2.0":3,"wooorm/retext-dom@0.3.1":4,"wooorm/retext-visit@0.2.5":5,"./map.json":6}],
+}, {"wooorm/retext@0.5.0":2,"wooorm/retext-pos@0.2.1":3,"wooorm/retext-dom@0.3.2":4,"wooorm/retext-visit@0.2.6":5,"./map.json":6}],
 2: [function(require, module, exports) {
 'use strict';
 
@@ -3157,7 +3157,6 @@ module.exports = tokenizerFactory;
  * @param {NLCSTNode} nlcst
  * @return {string}
  */
-
 function nlcstToString(nlcst) {
     var values,
         length,
@@ -3186,6 +3185,10 @@ function nlcstToString(nlcst) {
 
     return values.join('');
 }
+
+/*
+ * Expose `nlcstToString`.
+ */
 
 module.exports = nlcstToString;
 
@@ -4689,9 +4692,8 @@ Ware.prototype.run = function () {
  * Module Dependencies
  */
 
-var slice = [].slice;
-var co = require('co');
 var noop = function(){};
+var co = require('co');
 
 /**
  * Export `wrap-fn`
@@ -4710,10 +4712,15 @@ module.exports = wrap;
  */
 
 function wrap(fn, done) {
-  done = done || noop;
+  done = once(done || noop);
 
   return function() {
-    var args = slice.call(arguments);
+    // prevents arguments leakage
+    // see https://github.com/petkaantonov/bluebird/wiki/Optimization-killers#3-managing-arguments
+    var i = arguments.length;
+    var args = new Array(i);
+    while (i--) args[i] = arguments[i];
+
     var ctx = this;
 
     // done
@@ -4723,7 +4730,12 @@ function wrap(fn, done) {
 
     // async
     if (fn.length > args.length) {
-      return fn.apply(ctx, args.concat(done));
+      // NOTE: this only handles uncaught synchronous errors
+      try {
+        return fn.apply(ctx, args.concat(done));
+      } catch (e) {
+        return done(e);
+      }
     }
 
     // generator
@@ -4788,6 +4800,18 @@ function generator(value) {
 
 function promise(value) {
   return value && 'function' == typeof value.then;
+}
+
+/**
+ * Once
+ */
+
+function once(fn) {
+  return function() {
+    var ret = fn.apply(this, arguments);
+    fn = noop;
+    return ret;
+  };
 }
 
 }, {"co":34}],
@@ -5098,13 +5122,17 @@ function error(err) {
 var posjs,
     tagger;
 
-/*
- * Duo or npm:
- */
-
 try {
-    posjs = require('dariusk/pos-js');
+    /*
+     * Duo and component:
+     */
+
+    posjs = require('pos-js');
 } catch (exception) {
+   /*
+    * npm and component:
+    */
+
     posjs = require('pos');
 }
 
@@ -5205,7 +5233,7 @@ function pos(retext) {
 
 module.exports = pos;
 
-}, {"dariusk/pos-js":35}],
+}, {"pos-js":35}],
 35: [function(require, module, exports) {
 exports.Tagger = require('./POSTagger');
 exports.Lexer = require('./lexer');
@@ -303267,13 +303295,13 @@ Lexer.prototype.lex = function(string){
 
 var visit;
 
-/**
+/*
  * Module dependencies.
  */
 
 visit = require('retext-visit');
 
-/**
+/*
  * Throw when not running in the browser (or a
  * simulated browser environment).
  */
@@ -303290,7 +303318,6 @@ if (typeof document !== 'object') {
  *
  * @param {Node} node - Insertion.
  */
-
 function oninsertinside(node) {
     node.parent.toDOMNode().insertBefore(node.toDOMNode(),
         node.prev ? node.prev.toDOMNode().nextSibling : null
@@ -303302,7 +303329,6 @@ function oninsertinside(node) {
  *
  * @param {Node} node - Deletion.
  */
-
 function onremoveinside(node, previousParent) {
     if (node.toDOMNode().parentNode === previousParent.toDOMNode()) {
         previousParent.toDOMNode().removeChild(node.toDOMNode());
@@ -303315,7 +303341,6 @@ function onremoveinside(node, previousParent) {
  *
  * @param {Node} node - Changed node.
  */
-
 function onchangetextinside(node, value) {
     if (node.toString() === value) {
         node.toDOMNode().textContent = value;
@@ -303333,7 +303358,6 @@ function onchangetextinside(node, value) {
  * @this {Node}
  * @return {Node} DOM node.
  */
-
 function toDOMNode() {
     var self,
         DOMNode;
@@ -303348,19 +303372,19 @@ function toDOMNode() {
             DOMNode = document.createElement(self.DOMTagName);
         }
 
-        /**
+        /*
          * Store DOM node on context.
          */
 
         self.DOMNode = DOMNode;
 
-        /**
+        /*
          * Store context on DOM node.
          */
 
         DOMNode.TextOMNode = self;
 
-        /**
+        /*
          * Fake change events.
          */
 
@@ -303379,7 +303403,6 @@ function toDOMNode() {
  *
  * @param {Node} tree - TextOM node.
  */
-
 function onrun(tree) {
     tree.on('insertinside', oninsertinside);
     tree.on('removeinside', onremoveinside);
@@ -303391,11 +303414,10 @@ function onrun(tree) {
  *
  * @param {Retext} retext - Instance of Retext.
  */
-
 function plugin(retext) {
     var TextOM;
 
-    /**
+    /*
      * Depend on `retext-visit`.
      */
 
@@ -303414,7 +303436,7 @@ function plugin(retext) {
     return onrun;
 }
 
-/**
+/*
  * Expose `plugin`.
  */
 
@@ -303428,11 +303450,12 @@ module.exports = plugin;
  * Invoke `callback` for every descendant of the
  * operated on context.
  *
+ * @param {string?} type - Node type to search for.
+ *   Stops visiting when the return value is `false`.
  * @param {function(Node): boolean?} callback - Visitor.
  *   Stops visiting when the return value is `false`.
- * @this {Node} Context to search in.
+ * @this {Node} - Context to search in.
  */
-
 function visit(type, callback) {
     var node,
         next;
@@ -303445,7 +303468,7 @@ function visit(type, callback) {
     }
 
     while (node) {
-        /**
+        /*
          * Allow for removal of the node by `callback`.
          */
 
@@ -303457,7 +303480,7 @@ function visit(type, callback) {
             }
         }
 
-        /**
+        /*
          * If possible, invoke the node's own `visit`
          *  method, otherwise call retext-visit's
          * `visit` method.
@@ -303475,7 +303498,6 @@ function visit(type, callback) {
  *
  * @deprecated
  */
-
 function visitType() {
     throw new Error(
         'visitType(type, callback) is deprecated.\n' +
@@ -303486,9 +303508,8 @@ function visitType() {
 /**
  * Define `plugin`.
  *
- * @param {Retext} retext - Instance of Retext.
+ * @param {Retext} retext
  */
-
 function plugin(retext) {
     var TextOM,
         parentPrototype,
@@ -303498,7 +303519,7 @@ function plugin(retext) {
     parentPrototype = TextOM.Parent.prototype;
     elementPrototype = TextOM.Element.prototype;
 
-    /**
+    /*
      * Expose `visit` and `visitType` on Parents.
      *
      * Due to multiple inheritance of Elements (Parent
@@ -303509,7 +303530,7 @@ function plugin(retext) {
     elementPrototype.visitType = parentPrototype.visitType = visitType;
 }
 
-/**
+/*
  * Expose `plugin`.
  */
 
