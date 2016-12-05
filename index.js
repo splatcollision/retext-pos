@@ -1,76 +1,132 @@
-'use strict';
+var doc = require('global/document');
+var react = require('react');
+var dom = require('react-dom');
+var unified = require('unified');
+var english = require('retext-english');
+var pos = require('retext-pos');
+var has = require('has');
+var map = require('./map');
 
-/*
- * Dependencies.
- */
+var h = react.createElement;
+var processor = unified().use(english).use(pos);
+var color = colors(Object.keys(map).length);
 
-var Retext = require('wooorm/retext@0.5.0');
-var pos = require('wooorm/retext-pos@0.2.1');
-var dom = require('wooorm/retext-dom@0.3.2');
-var visit = require('wooorm/retext-visit@0.2.6');
+dom.render(
+  h(react.createClass({
+    getInitialState: getInitialState,
+    onChange: onChange,
+    onScroll: onScroll,
+    render: render
+  })),
+  doc.getElementById('root')
+);
 
-var map = require('./map.json');
+function getInitialState() {
+  return {text: doc.getElementsByTagName('template')[0].innerHTML};
+}
 
-/*
- * Retext.
- */
+function onChange(ev) {
+  this.setState({text: ev.target.value});
+}
 
-var retext = new Retext()
-    .use(visit)
-    .use(dom)
-    .use(pos);
+function onScroll(ev) {
+  this.refs.draw.scrollTop = ev.target.scrollTop;
+}
 
-/*
- * DOM elements.
- */
+function render() {
+  var text = this.state.text;
+  var tree = processor.run(processor.parse(text));
+  var available = keys();
+  var key = 0;
 
-var $document = document.documentElement;
-var $input = document.getElementsByTagName('textarea')[0];
-var $output = document.getElementsByTagName('div')[0];
-var $tag = document.getElementsByTagName('select')[0];
+  return h('div', {className: 'editor'}, [
+    h('div', {key: 'draw', className: 'draw', ref: 'draw'}, pad(all(tree))),
+    h('textarea', {key: 'area', value: text, onChange: this.onChange, onScroll: this.onScroll}),
+    h('div', {key: 'credits', className: 'credits'}, available)
+  ]);
 
-/*
- * Handlers
- */
+  function all(node) {
+    var children = node.children;
+    var length = children.length;
+    var index = -1;
+    var results = [];
 
-var tree;
-
-function oninputchange() {
-    if (tree) {
-        tree.toDOMNode().parentNode.removeChild(tree.toDOMNode());
+    while (++index < length) {
+      results = results.concat(one(children[index]));
     }
 
-    retext.parse($input.value, function (err, root) {
-        if (err) {
-          throw err;
-        }
+    return results;
+  }
 
-        tree = root;
+  function one(node) {
+    var result = 'value' in node ? node.value : all(node);
+    var styles = style(node);
 
-        tree.visit(function (node) {
-            var tag;
+    if (styles) {
+      key++;
+      result = h('span', {key: 's-' + key, style: styles}, result);
+    }
 
-            if (!node.DOMTagName || !node.data.partOfSpeech) {
-                return;
-            }
+    return result;
+  }
 
-            tag = node.data.partOfSpeech;
+  /* Trailing white-space in a `textarea` is shown, but not in a `div`
+   * with `white-space: pre-wrap`. Add a `br` to make the last newline
+   * explicit. */
+  function pad(nodes) {
+    var tail = nodes[nodes.length - 1];
 
-            node.toDOMNode().setAttribute('title', map[tag] || tag);
-            node.toDOMNode().setAttribute('data-tag', tag);
-        });
+    if (typeof tail === 'string' && tail.charAt(tail.length - 1) === '\n') {
+      nodes.push(h('br', {key: 'break'}));
+    }
 
-        $output.appendChild(tree.toDOMNode());
+    return nodes;
+  }
+
+  function keys() {
+    var nodes = [];
+
+    Object.keys(map).forEach(function (key) {
+      nodes.push(
+        h('span', {key: 'c-' + key, style: {backgroundColor: color(key)}}, map[key])
+      );
+
+      nodes.push(' ');
     });
+
+    nodes.pop();
+
+    return nodes;
+  }
 }
 
-function onfocuschange() {
-    $document.className = $tag.options[$tag.selectedIndex].value;
+function style(node) {
+  var tag = node.data && node.data.partOfSpeech;
+
+  if (tag && has(map, tag)) {
+    return {backgroundColor: color(tag)};
+  }
 }
 
+function colors(max) {
+  var cached = {};
+  var count = 0;
+  var step = 360 / max;
 
-$input.addEventListener('input', oninputchange);
-$tag.addEventListener('change', onfocuschange);
+  color.cached = cached;
 
-oninputchange();
-onfocuschange();
+  return color;
+
+  function color(id) {
+    var value;
+
+    if (has(cached, id)) {
+      return cached[id];
+    }
+
+    cached[id] = value = 'hsl(' + (count * step) + ', 96%, 90%)';
+    count++;
+
+    return value;
+  }
+}

@@ -1,5 +1,5 @@
 {
-  "CC": "Coord Conjunctionn",
+  "CC": "Coord Conjunction",
   "CD": "Cardinal number",
   "DT": "Determiner",
   "EX": "Existential there",
@@ -16,7 +16,7 @@
   "NNS": "Noun, plural",
   "POS": "Possessive ending",
   "PDT": "Predeterminer",
-  "PP": "Possessive pronoun",
+  "PP$": "Possessive pronoun",
   "PRP": "Personal pronoun",
   "RB": "Adverb",
   "RBR": "Adverb, comparative",
@@ -33,6 +33,6 @@
   "VBZ": "Verb, present",
   "WDT": "Wh-determiner",
   "WP": "Wh pronoun",
-  "WP": "Possessive-Wh",
+  "WP$": "Possessive-Wh",
   "WRB": "Wh-adverb"
 }

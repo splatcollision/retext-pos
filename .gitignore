@@ -1,7 +1,7 @@
 .DS_Store
 *.log
-bower_components/
-build/
+.nyc_output/
 coverage/
-components/
 node_modules/
+retext-pos.js
+retext-pos.min.js
