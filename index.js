@@ -78,6 +78,9 @@ function transformer(tree) {
 
   /* Patch a `partOfSpeech` property on `node`s. */
   function patch(node, tag) {
+    if (!node) {
+      return;
+    }
     var data = node.data || (node.data = {});
     data.partOfSpeech = tag;
   }
