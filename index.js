@@ -2,11 +2,10 @@
 
 var visit = require('unist-util-visit');
 var toString = require('nlcst-to-string');
-var posjs = require('pos');
+var NlpjsTFr = require('nlp-js-tools-french');
+var tagDict = require('./pos-dict');
 
 module.exports = pos;
-
-var tagger = new posjs.Tagger();
 
 function pos() {
   return transformer;
@@ -16,7 +15,6 @@ function transformer(tree) {
   var queue = [];
 
   visit(tree, 'WordNode', visitor);
-
   /* Gather a parent if not already gathered. */
   function visitor(node, index, parent) {
     if (parent && queue.indexOf(parent) === -1) {
@@ -33,6 +31,7 @@ function transformer(tree) {
     var values = [];
     var words = [];
     var child;
+    var tagger;
     var tags;
 
     while (++index < length) {
@@ -44,12 +43,15 @@ function transformer(tree) {
       }
     }
 
-    tags = tagger.tag(values);
+    tagger = new NlpjsTFr(values.join(' '));
+    tags = tagger.posTagger();
     index = -1;
     length = tags.length;
 
     while (++index < length) {
-      patch(words[index], tags[index][1]);
+      var enTag = tagDict[tags[index].pos[0]];
+      enTag = enTag || 'UNK';
+      patch(words[index], enTag);
     }
   }
 

@@ -5,19 +5,21 @@ var retext = require('retext');
 var visit = require('unist-util-visit');
 var pos = require('./');
 
-var sentence = 'I went to the store, to buy 5.2 gallons of milk.';
-
+var sentence = 'Elle semble se nourrir généralement de plancton, et de hotdog du vendeur du coin.';
 var tags = [
   'PRP',
-  'VBD',
-  'TO',
-  'DT',
-  'NN',
-  'TO',
   'VB',
-  'CD',
-  'NNS',
-  'IN',
+  'PRP',
+  'VB',
+  'UNK',
+  'UNK',
+  'NN',
+  'UNK',
+  'NN',
+  'UNK',
+  'VB',
+  'NN',
+  'JJ',
   'NN'
 ];
 
@@ -25,10 +27,10 @@ test('pos()', function (t) {
   var proc = retext().use(pos);
   var tree = proc.run(proc.parse(sentence));
   var index = -1;
-
-  visit(tree, 'WordNode', function (node) {
-    t.equal(node.data.partOfSpeech, tags[++index]);
+  tree.then(function (tr) {
+    visit(tr, 'WordNode', function (node) {
+      t.equal(node.data.partOfSpeech, tags[++index]);
+    });
+    t.end();
   });
-
-  t.end();
 });
