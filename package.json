@@ -1,7 +1,7 @@
 {
-  "name": "retext-pos",
+  "name": "retext-pos-french",
   "version": "2.0.0",
-  "description": "Part-of-speech (POS) tagger",
+  "description": "Part-of-speech (POS) tagger, converted to French language",
   "license": "MIT",
   "keywords": [
     "part",
@@ -9,11 +9,13 @@
     "speech",
     "pos",
     "tagger",
-    "retext"
+    "retext",
+    "french"
   ],
-  "repository": "retextjs/retext-pos",
+  "repository": "splatcollision/retext-pos-french",
   "author": "Titus Wormer <tituswormer@gmail.com> (http://wooorm.com)",
   "contributors": [
+    "Kevin Haggerty <splatcol@gmail.com> (http://splatcollision.com)",
     "Titus Wormer <tituswormer@gmail.com> (http://wooorm.com)"
   ],
   "files": [
